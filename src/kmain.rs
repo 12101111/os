@@ -1,6 +1,6 @@
 pub fn kmain() -> ! {
-    println!("Hello,World !");
-    println!("Boot from UEFI !!");
-    println!("Written in Rust !!!");
+    info!("Hello,World !");
+    info!("Boot from UEFI !!");
+    info!("Written in Rust !!!");
     panic!("Good bye!");
 }

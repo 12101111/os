@@ -1,6 +1,6 @@
 # Operating System
 
-My "operating system" ! Written in Rust. Only support UEFI x86_64.
+My "operating system" ! Written in Rust. Only support UEFI x86_64 now.
 
 ## Run
 

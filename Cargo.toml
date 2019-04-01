@@ -3,15 +3,11 @@ name = "os"
 version = "0.1.0"
 description = "A Operating System."
 keywords = ["system", "uefi", "os"]
-license = "MIT"
+license = "GPL v3"
 authors = ["韩朴宇 <w12101111@gmail.com>"]
 repository = "https://github.com/12101111/os"
 homepage = "https://github.com/12101111/os"
 edition = "2018"
-
-[[bin]]
-name = "os"
-path = "./src/uefi_main.rs"
 
 [dependencies]
 uefi = { git =  "https://github.com/rust-osdev/uefi-rs.git" }
@@ -20,3 +16,4 @@ fbterm = { git = "https://github.com/12101111/fbterm"}
 lazy_static = {version = "1" ,features =["spin_no_std"]}
 x86_64 = "0.5"
 spin = "0.5"
+uart_16550 = { git = "https://github.com/12101111/uart_16550"}

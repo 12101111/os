@@ -1,2 +1,1 @@
-#[macro_use]
-pub mod fb;
+pub mod console;

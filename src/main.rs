@@ -1,12 +1,21 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
-use uefi::prelude::*;
-use uefi::proto::console::gop::GraphicsOutput;
-use uefi::table::boot::{MemoryDescriptor, MemoryType};
+#![feature(decl_macro)]
+
+pub mod drivers;
+pub mod kmain;
+
 #[macro_use]
-mod drivers;
-mod kmain;
-use drivers::fb::init_fb;
+extern crate log;
+
+use drivers::console::{fbterm::init_fb, init_logger, uart::init_uart};
+use kmain::kmain;
+
+use uefi::{
+    prelude::*,
+    proto::console::gop::GraphicsOutput,
+    table::boot::{MemoryDescriptor, MemoryType},
+};
 
 #[no_mangle]
 pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
@@ -28,8 +37,10 @@ pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
         .exit_boot_services(image, &mut mmap_storage[..])
         .expect_success("Failed to exit boot services");
     let _rt = unsafe { st.runtime_services() };
+    init_logger();
     init_fb(fb.as_mut_ptr(), width, height);
-    kmain::kmain();
+    init_uart();
+    kmain()
 }
 
 #[cfg(not(debug_assertions))]
@@ -63,6 +74,6 @@ fn set_graphics_mode(gop: &mut GraphicsOutput) -> (usize, usize) {
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
-    println!("{}", info);
+    error!("{}", info);
     loop {}
 }
