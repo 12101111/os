@@ -10,10 +10,13 @@ homepage = "https://github.com/12101111/os"
 edition = "2018"
 
 [dependencies]
-uefi = { git =  "https://github.com/rust-osdev/uefi-rs.git" }
 log = { version = "0.4", default-features = false }
-fbterm = { git = "https://github.com/12101111/fbterm"}
 lazy_static = {version = "1" ,features =["spin_no_std"]}
-x86_64 = "0.5"
 spin = "0.5"
+
+uefi = { git =  "https://github.com/rust-osdev/uefi-rs.git" }
+x86_64 = "0.7"
+raw-cpuid = "6.1"
+
+fbterm = { git = "https://github.com/12101111/fbterm"}
 uart_16550 = { git = "https://github.com/12101111/uart_16550"}
