@@ -71,11 +71,11 @@ fn get_option(input: &mut Input) -> Option<bool> {
 fn set_mode(gop: &mut GraphicsOutput, st: &SystemTable<Boot>) {
     let stdout = st.stdout();
     stdout.clear().expect_success("Clear stdout failed");
-    write!(stdout, "Auto select resolution: 800x600 in debug mode\n").expect("output failed");
+    write!(stdout, "Auto select resolution: 1024x768 in debug mode\n").expect("output failed");
     let mode = gop
         .modes()
         .map(|mode| mode.expect("Warnings encountered while querying mode"))
-        .find(|ref mode| mode.info().resolution() == (800, 600))
+        .find(|ref mode| mode.info().resolution() == (1024, 768))
         .unwrap();
     gop.set_mode(&mode)
         .expect_success("Failed to set graphics mode");
