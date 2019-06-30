@@ -20,7 +20,3 @@ raw-cpuid = "6.1"
 
 fbterm = { git = "https://github.com/12101111/fbterm"}
 uart_16550 = { git = "https://github.com/12101111/uart_16550"}
-
-[package.metadata.cargo-xbuild]
-memcpy = true
-sysroot_path = "target/sysroot"
