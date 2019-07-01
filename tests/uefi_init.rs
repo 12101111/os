@@ -9,7 +9,6 @@
 extern crate log;
 
 use os::drivers::{uefi_init,console::*};
-use os::kmain::kmain;
 use uefi::prelude::*;
 
 #[no_mangle]
@@ -26,7 +25,7 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
 
 #[test_case]
 fn test_print() {
-    log!("test_print... ");
+    info!("test_print... ");
     println!("test_println output");
     print!("[ok]");
 }

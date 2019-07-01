@@ -45,6 +45,7 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 #[no_mangle]
 pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
     let (st, _map) = drivers::uefi_init(image, st);
+    info!("Start to run test");
     test_main();
     loop {}
 }
@@ -53,4 +54,10 @@ pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
     test_panic_handler(info)
+}
+
+#[test_case]
+fn test_print() {
+    info!("It works");
+    assert_eq!(1+1,2);
 }

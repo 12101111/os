@@ -37,3 +37,9 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
 fn panic(info: &core::panic::PanicInfo) -> ! {
     os::test_panic_handler(info)
 }
+
+#[test_case]
+fn test_print() {
+    info!("It works");
+    assert_eq!(1+1,2);
+}
