@@ -20,3 +20,11 @@ raw-cpuid = "6.1"
 
 fbterm = { git = "https://github.com/12101111/fbterm"}
 uart_16550 = { git = "https://github.com/12101111/uart_16550"}
+
+[package.metadata.bootuefi]
+qemu = "qemu-system-x86_64"
+bios = "OVMF.fd"
+run-args = []
+test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-nographic"]
+test-success-exit-code = 33
+test-timeout = 300
