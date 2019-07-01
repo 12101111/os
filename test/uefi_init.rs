@@ -8,32 +8,25 @@
 #[macro_use]
 extern crate log;
 
-use os::drivers::{acpi::rsdp, uefi_init};
+use os::drivers::{uefi_init,console::*};
 use os::kmain::kmain;
 use uefi::prelude::*;
 
 #[no_mangle]
 pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
     let (st, _map) = uefi_init(image, st);
-    let _rsdp = rsdp(&st); //0x7bfa014
-    let _rt = unsafe { st.runtime_services() };
-    #[cfg(test)]
     test_main();
-    #[cfg(not(test))]
-    kmain();
     loop {}
 }
 
-#[cfg(not(test))]
-#[panic_handler]
-fn panic(info: &core::panic::PanicInfo) -> ! {
-    error!("{}", info);
-    x86_64::instructions::hlt();
-    loop {}
-}
-
-#[cfg(test)]
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
     os::test_panic_handler(info)
+}
+
+#[test_case]
+fn test_print() {
+    log!("test_print... ");
+    println!("test_println output");
+    print!("[ok]");
 }
