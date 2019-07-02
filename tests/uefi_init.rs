@@ -8,12 +8,12 @@
 #[macro_use]
 extern crate log;
 
-use os::drivers::{uefi_init,console::*};
+use os::drivers::{console::*, uefi_init};
 use uefi::prelude::*;
 
 #[no_mangle]
 pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
-    let (st, _map) = uefi_init(image, st);
+    let (_st, _map) = uefi_init(image, st);
     test_main();
     loop {}
 }

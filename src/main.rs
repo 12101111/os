@@ -9,7 +9,6 @@
 extern crate log;
 
 use os::drivers::{acpi::rsdp, uefi_init};
-use os::kmain::kmain;
 use uefi::prelude::*;
 
 #[no_mangle]
@@ -18,10 +17,12 @@ pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
     let _rsdp = rsdp(&st); //0x7bfa014
     let _rt = unsafe { st.runtime_services() };
     #[cfg(test)]
-    test_main();
+    {
+        test_main();
+        loop {}
+    }
     #[cfg(not(test))]
-    kmain();
-    loop {}
+    os::kmain::kmain()
 }
 
 #[cfg(not(test))]
@@ -41,5 +42,5 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
 #[test_case]
 fn test_print() {
     info!("It works");
-    assert_eq!(1+1,2);
+    assert_eq!(1 + 1, 2);
 }

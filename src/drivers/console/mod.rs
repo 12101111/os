@@ -52,3 +52,21 @@ impl Log for ConsoleLogger {
     }
     fn flush(&self) {}
 }
+
+#[test_case]
+fn test_print_multiline() {
+    info!("Print 100 line");
+    for i in 0..100 {
+        println!("{}", i);
+    }
+    info!("PASS")
+}
+
+#[test_case]
+fn test_print_longline() {
+    info!("Print long line");
+    for i in 0..100 {
+        print!("{}", i);
+    }
+    info!("PASS")
+}
