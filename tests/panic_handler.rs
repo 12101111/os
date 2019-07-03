@@ -2,32 +2,23 @@
 #![no_main]
 #![feature(decl_macro)]
 #![feature(panic_info_message)]
-#![feature(custom_test_frameworks)]
-#![test_runner(os::test_runner)]
-#![reexport_test_harness_main = "test_main"]
 
 #[macro_use]
 extern crate log;
 
-use os::drivers::{console::*, uefi_init};
+use os::drivers::uefi_init;
 use os::{exit_qemu,QemuExitCode};
 use uefi::prelude::*;
 use core::fmt::{self,Write};
 use core::panic::PanicInfo;
 
 const MESSAGE: &str = "Example panic message from panic_handler test";
-const PANIC_LINE: u32 = 31; // adjust this when moving the `panic!` call
+const PANIC_LINE: u32 = 22; // adjust this when moving the `panic!` call
 
 #[no_mangle]
 pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
     let (_st, _map) = uefi_init(image, st);
     info!("Test panic_handler");
-    test_main();
-    loop{}
-}
-
-#[test_case]
-pub fn test_panic_handler(){
     panic!(MESSAGE);
 }
 

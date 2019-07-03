@@ -20,6 +20,10 @@ x86_64 = "0.7"
 fbterm = { git = "https://github.com/12101111/fbterm"}
 uart_16550 = { git = "https://github.com/12101111/uart_16550"}
 
+[[test]]
+name = "panic_handler"
+harness = false
+
 [package.metadata.bootuefi]
 qemu = "qemu-system-x86_64"
 bios = "OVMF.fd"
