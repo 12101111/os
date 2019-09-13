@@ -1,23 +1,16 @@
 pub mod acpi;
 pub mod console;
-pub mod uefifb;
-
-use console::{fbterm::init_fbterm, init_logger, uart::init_uart};
 use uefi::{
     prelude::*,
     table::boot::{MemoryDescriptor, MemoryMapIter, MemoryType},
     table::{Runtime, SystemTable},
 };
-use uefifb::init_fb;
 
-pub fn uefi_init(
+pub fn init(
     image: uefi::Handle,
     st: SystemTable<Boot>,
 ) -> (SystemTable<Runtime>, MemoryMapIter<'static>) {
-    let fb = init_fb(&st);
-    init_logger();
-    init_fbterm(fb);
-    init_uart();
+    console::init(&st);
     let buffer = alloc_mmap(&st);
     st.exit_boot_services(image, &mut buffer[..])
         .expect_success("Failed to exit boot services")

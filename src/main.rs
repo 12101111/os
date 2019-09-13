@@ -8,13 +8,12 @@
 #[macro_use]
 extern crate log;
 
-use os::drivers::{acpi::rsdp, uefi_init};
+use os::kernel;
 use uefi::prelude::*;
 
 #[no_mangle]
 pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
-    let (st, _map) = uefi_init(image, st);
-    let _rsdp = rsdp(&st); //0x7bfa014
+    let (st, map) = kernel::init(image, st);
     let _rt = unsafe { st.runtime_services() };
     #[cfg(test)]
     {
@@ -22,15 +21,28 @@ pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
         loop {}
     }
     #[cfg(not(test))]
-    os::kmain::kmain()
+    {
+        mem_map(map);
+        os::kmain::kmain()
+    }
+}
+
+fn mem_map(map: uefi::table::boot::MemoryMapIter) {
+    for mem in map {
+        trace!(
+            "mem: 0x{:016X} Size(Page): {:8} Type:{:?}",
+            mem.phys_start,
+            mem.page_count,
+            mem.ty
+        );
+    }
 }
 
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
     error!("{}", info);
-    x86_64::instructions::hlt();
-    loop {}
+    os::hlt_loop();
 }
 
 #[cfg(test)]

@@ -31,3 +31,9 @@ run-args = []
 test-args = ["-device","isa-debug-exit,iobase=0xf4,iosize=0x04","-nographic","-serial","stdio"]
 test-success-exit-code = 33
 test-timeout = 300
+
+[profile.dev]
+lto = true
+
+[profile.release]
+lto = true

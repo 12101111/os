@@ -1,8 +1,8 @@
-use core::fmt::Write;
+use super::CONSOLE;
 use fbterm::*;
 use uefi::{prelude::*, proto::console::gop::GraphicsOutput};
 
-pub fn init_fb(st: &SystemTable<Boot>) -> Framebuffer<'static, XRGB8888> {
+pub fn init(st: &SystemTable<Boot>) {
     let bt = st.boot_services();
     let gop = bt
         .locate_protocol::<GraphicsOutput>()
@@ -10,13 +10,19 @@ pub fn init_fb(st: &SystemTable<Boot>) -> Framebuffer<'static, XRGB8888> {
     let gop = unsafe { &mut *gop.get() };
     set_mode(gop, st);
     let fb = gop.frame_buffer().as_mut_ptr();
+    trace!("uefifb address: {:?}",fb);
     let info = gop.current_mode_info();
-    let background = XRGB8888::new(0, 0, 0, 0xA8);
-    let foreground = XRGB8888::new(255, 0xA8, 0xA8, 0xA8);
+    let background = RGBA8888::new(0, 0, 0, 0xA8);
+    let foreground = RGBA8888::new(255, 0xA8, 0xA8, 0xA8);
     let (w, h) = info.resolution();
-    unsafe { Framebuffer::new(fb, w, h, info.stride(), background, foreground) }
+    let fb = unsafe { Framebuffer::new(fb, w, h, info.stride(), background, foreground) };
+    let mut fbterm = Fbterm::new(fb, fbterm::Fonts::VGA8x14);
+    fbterm.clear();
+    CONSOLE.lock().fbterm = Some(fbterm);
 }
 
+#[cfg(not(debug_assertions))]
+use core::fmt::Write;
 #[cfg(not(debug_assertions))]
 use uefi::proto::console::text::{Input, Key};
 
@@ -71,7 +77,6 @@ fn get_option(input: &mut Input) -> Option<bool> {
 fn set_mode(gop: &mut GraphicsOutput, st: &SystemTable<Boot>) {
     let stdout = st.stdout();
     stdout.clear().expect_success("Clear stdout failed");
-    write!(stdout, "Auto select resolution: 1024x768 in debug mode\n").expect("output failed");
     let mode = gop
         .modes()
         .map(|mode| mode.expect("Warnings encountered while querying mode"))

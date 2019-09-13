@@ -1,6 +1,6 @@
 use super::CONSOLE;
 use uart_16550::*;
-pub fn init_uart() {
+pub fn init() {
     if CONSOLE.lock().uart.is_some() {
         return;
     }
