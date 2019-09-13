@@ -42,21 +42,3 @@ pub fn init(st: &SystemTable<Boot>) {
     uart::init();
     uefifb::init(st);
 }
-
-#[test_case]
-fn test_print_multiline() {
-    info!("Print 100 line");
-    for i in 0..100 {
-        println!("{}", i);
-    }
-    info!("PASS")
-}
-
-#[test_case]
-fn test_print_longline() {
-    info!("Print long line");
-    for i in 0..100 {
-        print!("{}", i);
-    }
-    info!("PASS")
-}

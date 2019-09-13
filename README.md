@@ -4,8 +4,6 @@ My "operating system" ! Written in Rust. Only support UEFI x86_64 now.
 
 ## Build tools
 
-- [cargo-xbuild](https://github.com/rust-osdev/cargo-xbuild)
-
 - [bootuefi](https://github.com/12101111/bootuefi)
 
 - [OVMF](https://github.com/tianocore/tianocore.github.io/wiki/OVMF):
@@ -17,13 +15,7 @@ Install OVMF and set `bios = "<path to OVMF.fd>"` in `Cargo.toml`.
 ## Run
 
 ```shell
-cargo xrun
-```
-
-## Run test
-
-```shell
-cargo xtest
+cargo run -Z build-std=core
 ```
 
 ![os](./doc/os.jpg)
