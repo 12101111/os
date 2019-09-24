@@ -8,8 +8,8 @@ extern crate log;
 use os::kernel;
 use uefi::prelude::*;
 
-#[no_mangle]
-pub extern "C" fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> ! {
+#[entry]
+fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> Status {
     let (st, map) = kernel::init(image, st);
     let _rt = unsafe { st.runtime_services() };
     mem_map(map);
