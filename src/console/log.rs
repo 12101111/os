@@ -6,8 +6,8 @@ struct ConsoleLogger;
 static LOGGER: ConsoleLogger = ConsoleLogger;
 
 pub fn init() {
-    log::set_logger(&LOGGER).unwrap();
-    log::set_max_level(LevelFilter::Trace);
+    log::set_logger(&LOGGER).expect("Set logger failed");
+    log::set_max_level(LevelFilter::Debug);
 }
 
 impl Log for ConsoleLogger {

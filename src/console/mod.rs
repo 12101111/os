@@ -19,14 +19,12 @@ pub struct Console {
 
 pub fn _print(args: fmt::Arguments) {
     let mut console = CONSOLE.lock();
-    console
-        .uart
-        .as_mut()
-        .map(|uart| uart.write_fmt(args).unwrap());
-    console
-        .fbterm
-        .as_mut()
-        .map(|fbterm| fbterm.write_fmt(args).unwrap());
+    if let Some(uart) = console.uart.as_mut() {
+        uart.write_fmt(args).unwrap();
+    }
+    if let Some(fbterm) = console.fbterm.as_mut() {
+        fbterm.write_fmt(args).unwrap();
+    }
 }
 
 pub macro print($($arg:tt)*) {

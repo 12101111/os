@@ -1,11 +1,42 @@
 #![no_std]
 #![feature(decl_macro)]
+#![feature(abi_x86_interrupt)]
+#![feature(alloc_error_handler)]
 
 #[macro_use]
 extern crate log;
+extern crate alloc;
 
-pub mod kernel;
-pub mod kmain;
+pub mod acpi;
+pub mod console;
+pub mod int;
+pub mod mm;
+
+use uefi::{
+    prelude::*,
+    table::{boot, SystemTable},
+};
+
+pub fn init(image: uefi::Handle, st: SystemTable<Boot>) {
+    console::init(&st);
+    let bt = st.boot_services();
+    let mmap_size =
+        st.boot_services().memory_map_size() + 8 * core::mem::size_of::<boot::MemoryDescriptor>();
+    let mmap_buffer = bt
+        .allocate_pool(boot::MemoryType::LOADER_DATA, mmap_size)
+        .expect_success("alloc failed");
+    let buffer = unsafe { core::slice::from_raw_parts_mut(mmap_buffer, mmap_size) };
+    let (st, map) = st
+        .exit_boot_services(image, &mut buffer[..])
+        .expect_success("Failed to exit boot services");
+    unsafe { int::init() }
+    mm::init(map);
+    let acpi = acpi::get_acpi(&st);
+    info!("BSP: {:?}",acpi.boot_processor);
+    for ap in acpi.application_processors{
+        info!("AP: {:?}",ap)
+    }
+}
 
 pub fn hlt_loop() -> ! {
     loop {
@@ -13,46 +44,13 @@ pub fn hlt_loop() -> ! {
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn memcpy(dest: *mut u8, src: *const u8, n: usize) -> *mut u8 {
-    let mut i = 0;
-    while i < n {
-        *dest.offset(i as isize) = *src.offset(i as isize);
-        i += 1;
-    }
-    dest
+#[panic_handler]
+fn panic(info: &core::panic::PanicInfo) -> ! {
+    error!("{}", info);
+    hlt_loop()
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn memmove(dest: *mut u8, src: *const u8, n: usize) -> *mut u8 {
-    if src < dest as *const u8 {
-        // copy from end
-        let mut i = n;
-        while i != 0 {
-            i -= 1;
-            *dest.offset(i as isize) = *src.offset(i as isize);
-        }
-    } else {
-        // copy from beginning
-        let mut i = 0;
-        while i < n {
-            *dest.offset(i as isize) = *src.offset(i as isize);
-            i += 1;
-        }
-    }
-    dest
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn memcmp(s1: *const u8, s2: *const u8, n: usize) -> i32 {
-    let mut i = 0;
-    while i < n {
-        let a = *s1.offset(i as isize);
-        let b = *s2.offset(i as isize);
-        if a != b {
-            return a as i32 - b as i32;
-        }
-        i += 1;
-    }
-    0
+#[alloc_error_handler]
+fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
+    panic!("allocation error: {:?}", layout)
 }

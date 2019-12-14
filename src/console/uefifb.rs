@@ -10,7 +10,7 @@ pub fn init(st: &SystemTable<Boot>) {
     let gop = unsafe { &mut *gop.get() };
     set_mode(gop, st);
     let fb = gop.frame_buffer().as_mut_ptr();
-    trace!("uefifb address: {:?}",fb);
+    trace!("uefifb address: {:?}", fb);
     let info = gop.current_mode_info();
     let background = RGBA8888::new(0, 0, 0, 0xA8);
     let foreground = RGBA8888::new(255, 0xA8, 0xA8, 0xA8);
@@ -52,7 +52,7 @@ fn set_mode(gop: &mut GraphicsOutput, st: &SystemTable<Boot>) {
             }
         }
     }
-    write!(stdout, "\n").expect("output failed");
+    writeln!(stdout, "").expect("output failed");
     if let Some(mode) = mode_changed {
         gop.set_mode(&mode)
             .expect_success("Failed to set graphics mode");

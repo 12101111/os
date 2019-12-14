@@ -1,6 +1,6 @@
 [package]
 name = "os"
-version = "0.1.1"
+version = "0.2"
 description = "A Operating System."
 keywords = ["system", "uefi", "os"]
 license = "GPL v3"
@@ -11,11 +11,13 @@ edition = "2018"
 
 [dependencies]
 log = { version = "0.4", default-features = false }
-lazy_static = {version = "1" ,features =["spin_no_std"]}
+#lazy_static = {version = "1" ,features =["spin_no_std"]}
 spin = "0.5"
+staticvec = { version = "0.6", default-features = false }
 
-uefi = "0.3.1"
-x86_64 = "0.7"
+uefi = "0.4"
+x86_64 = "0.8"
+acpi = "0.4"
 
 fbterm = { git = "https://github.com/12101111/fbterm"}
 uart_16550 = { git = "https://github.com/12101111/uart_16550"}
@@ -23,7 +25,7 @@ uart_16550 = { git = "https://github.com/12101111/uart_16550"}
 [package.metadata.bootuefi]
 qemu = "qemu-system-x86_64"
 bios = "OVMF.fd"
-run-args = []
+run-args = ["-monitor","vc","-m","256M"]
 test-args = ["-device","isa-debug-exit,iobase=0xf4,iosize=0x04","-nographic","-serial","stdio"]
 test-success-exit-code = 33
 test-timeout = 300
