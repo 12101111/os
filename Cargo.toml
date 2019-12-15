@@ -1,6 +1,6 @@
 [package]
 name = "os"
-version = "0.2"
+version = "0.2.0"
 description = "A Operating System."
 keywords = ["system", "uefi", "os"]
 license = "GPL v3"

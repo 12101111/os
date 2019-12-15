@@ -15,7 +15,13 @@ Install OVMF and set `bios = "<path to OVMF.fd>"` in `Cargo.toml`.
 ## Run
 
 ```shell
-cargo run -Z build-std=core
+cargo run -Z build-std=core,alloc
+```
+
+or using `cargo-xbuild`
+
+```shell
+cargo xrun
 ```
 
 ![os](./doc/os.jpg)
