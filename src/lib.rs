@@ -6,6 +6,7 @@
 #[macro_use]
 extern crate log;
 extern crate alloc;
+extern crate rlibc;
 
 pub mod acpi;
 pub mod console;

@@ -13,18 +13,19 @@ edition = "2018"
 log = { version = "0.4", default-features = false }
 #lazy_static = {version = "1" ,features =["spin_no_std"]}
 spin = "0.5"
-staticvec = { version = "0.6", default-features = false }
+staticvec = { version = "0.8", default-features = false }
+rlibc = "1.0"
 
 uefi = "0.4"
 x86_64 = "0.8"
-acpi = "0.4"
+acpi = "0.5"
 
 fbterm = { git = "https://github.com/12101111/fbterm"}
 uart_16550 = { git = "https://github.com/12101111/uart_16550"}
 
 [package.metadata.bootuefi]
 qemu = "qemu-system-x86_64"
-bios = "OVMF.fd"
+bios = "/usr/share/edk2-ovmf/OVMF_CODE.fd"
 run-args = ["-monitor","vc","-m","256M"]
 test-args = ["-device","isa-debug-exit,iobase=0xf4,iosize=0x04","-nographic","-serial","stdio"]
 test-success-exit-code = 33

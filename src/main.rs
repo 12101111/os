@@ -12,5 +12,6 @@ extern crate alloc;
 #[entry]
 fn efi_main(image: uefi::Handle, st: SystemTable<Boot>) -> Status {
     os::init(image, st);
+    info!("init done!");
     panic!("Done!")
 }
