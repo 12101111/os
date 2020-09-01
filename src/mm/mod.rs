@@ -4,10 +4,11 @@ use page::FrameAllocator;
 
 use alloc::alloc::{GlobalAlloc, Layout};
 use spin::Mutex;
+use uefi::table::boot::MemoryDescriptor;
 use x86_64::registers::control::Cr3;
 use x86_64::structures::paging::{mapper::OffsetPageTable, PageTable};
 
-pub fn init(map: uefi::table::boot::MemoryMapIter) {
+pub fn init(map: impl Iterator<Item = &'static MemoryDescriptor>) {
     *FRAME_ALLOCATOR.lock() = Some(FrameAllocator::from_uefi(map));
     let (frame, _flags) = Cr3::read();
     let phys = frame.start_address().as_u64();
@@ -32,7 +33,10 @@ unsafe impl GlobalAlloc for PageAllocator {
             count += 1;
         }
         let mut allocator = FRAME_ALLOCATOR.lock();
-        allocator.as_mut().expect("Allocator not initialized").alloc(count) as *mut u8
+        allocator
+            .as_mut()
+            .expect("Allocator not initialized")
+            .alloc(count) as *mut u8
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
@@ -42,6 +46,9 @@ unsafe impl GlobalAlloc for PageAllocator {
             count += 1;
         }
         let mut allocator = FRAME_ALLOCATOR.lock();
-        allocator.as_mut().expect("Allocator not initialized").dealloc(ptr as usize, count);
+        allocator
+            .as_mut()
+            .expect("Allocator not initialized")
+            .dealloc(ptr as usize, count);
     }
 }

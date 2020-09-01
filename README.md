@@ -24,4 +24,4 @@ or using `cargo-xbuild`
 cargo xrun
 ```
 
-![os](./doc/os.jpg)
+![os](./doc/os.png)

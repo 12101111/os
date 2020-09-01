@@ -1,5 +1,5 @@
 use staticvec::StaticVec;
-use uefi::table::boot::MemoryType;
+use uefi::table::boot::{MemoryDescriptor, MemoryType};
 
 #[derive(Clone, Copy)]
 pub struct FreeFrame {
@@ -12,7 +12,7 @@ pub struct FrameAllocator {
 }
 
 impl FrameAllocator {
-    pub fn from_uefi(mem_iter: uefi::table::boot::MemoryMapIter) -> Self {
+    pub fn from_uefi(mem_iter: impl Iterator<Item = &'static MemoryDescriptor>) -> Self {
         let mut allocator = FrameAllocator {
             map: StaticVec::new(),
         };
@@ -37,14 +37,14 @@ impl FrameAllocator {
         allocator
     }
     pub fn alloc(&mut self, count: u32) -> usize {
-        for i in (0..self.map.len()).rev(){
-            if self.map[i].len >= count{
+        for i in (0..self.map.len()).rev() {
+            if self.map[i].len >= count {
                 self.map[i].len -= count;
                 let result = self.map[i].start + self.map[i].len;
                 if self.map[i].len == 0 {
                     self.map.pop();
                 }
-                return (result as usize) << 12
+                return (result as usize) << 12;
             }
         }
         panic!("Frame alloc failed")

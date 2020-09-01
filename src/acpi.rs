@@ -9,13 +9,13 @@ pub fn get_acpi(st: &SystemTable<Runtime>) -> acpi::Acpi {
         .find(|cfg| cfg.guid == uefi::table::cfg::ACPI2_GUID)
         .expect("Can't find ACPI Table")
         .address as usize;
-    acpi::parse_rsdp(&mut Ident, rsdp).unwrap()
+    unsafe { acpi::parse_rsdp(&mut Ident, rsdp).unwrap() }
 }
 
 struct Ident;
 
 impl handler::AcpiHandler for Ident {
-    fn map_physical_region<T>(
+    unsafe fn map_physical_region<T>(
         &mut self,
         physical_address: usize,
         size: usize,

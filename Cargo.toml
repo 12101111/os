@@ -13,12 +13,12 @@ edition = "2018"
 log = { version = "0.4", default-features = false }
 #lazy_static = {version = "1" ,features =["spin_no_std"]}
 spin = "0.5"
-staticvec = { version = "0.8", default-features = false }
+staticvec = { version = "0.10", default-features = false }
 rlibc = "1.0"
 
-uefi = "0.4"
-x86_64 = "0.8"
-acpi = "0.5"
+uefi = "0.5"
+x86_64 = "0.11"
+acpi = "1.0"
 
 fbterm = { git = "https://github.com/12101111/fbterm"}
 uart_16550 = { git = "https://github.com/12101111/uart_16550"}
