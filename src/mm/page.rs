@@ -17,12 +17,6 @@ impl FrameAllocator {
             map: StaticVec::new(),
         };
         for mem in mem_iter {
-            trace!(
-                "Page: 0x{:06X} -- 0x{:06X} Type:{:?}",
-                mem.phys_start >> 12,
-                (mem.phys_start >> 12) + mem.page_count,
-                mem.ty
-            );
             assert!(mem.page_count > 0);
             if let MemoryType::CONVENTIONAL | MemoryType::BOOT_SERVICES_CODE = mem.ty {
                 let item = FreeFrame {
@@ -89,5 +83,10 @@ impl FrameAllocator {
         for i in self.map.iter() {
             debug!("Page: 0x{:06X} -- 0x{:06X}", i.start, i.start + i.len)
         }
+    }
+
+    pub fn size(&self) -> usize {
+        let frames: u32 = self.map.iter().map(|f| f.len).sum();
+        (frames as usize) * 4096
     }
 }

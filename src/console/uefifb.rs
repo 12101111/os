@@ -1,8 +1,17 @@
 use super::CONSOLE;
+use core::ptr::NonNull;
 use fbterm::*;
-use uefi::{prelude::*, proto::console::gop::GraphicsOutput};
+use uefi::{
+    prelude::*,
+    proto::console::gop::GraphicsOutput,
+    proto::media::{
+        file::{File, FileAttribute, FileInfo, FileMode, FileType},
+        fs::SimpleFileSystem,
+    },
+    table::boot,
+};
 
-pub fn init(st: &SystemTable<Boot>) {
+pub fn get_fb(st: &SystemTable<Boot>) -> Framebuffer<'static, RGBA8888> {
     let bt = st.boot_services();
     let gop = bt
         .locate_protocol::<GraphicsOutput>()
@@ -15,10 +24,78 @@ pub fn init(st: &SystemTable<Boot>) {
     let background = RGBA8888::new(0, 0, 0, 0xA8);
     let foreground = RGBA8888::new(255, 0xA8, 0xA8, 0xA8);
     let (w, h) = info.resolution();
-    let fb = unsafe { Framebuffer::new(fb, w, h, info.stride(), background, foreground) };
-    let mut fbterm = Fbterm::new(fb, fbterm::Fonts::VGA8x14);
-    fbterm.clear();
-    CONSOLE.lock().fbterm = Some(fbterm);
+    let fb = NonNull::new(fb).unwrap();
+    unsafe { Framebuffer::new(fb, w, h, info.stride(), background, foreground) }
+}
+
+pub fn get_font(st: &SystemTable<Boot>) -> &'static [u8] {
+    let bt = st.boot_services();
+    let fs = bt
+        .locate_protocol::<SimpleFileSystem>()
+        .expect_success("UEFI SimpleFileSystem not support");
+    let fs = unsafe { &mut *fs.get() };
+    let mut root = fs.open_volume().expect_success("Open volume failed");
+    let font_file = root
+        .open("font.ttf", FileMode::Read, FileAttribute::VALID_ATTR)
+        .expect_success("Failed to load font.ttf")
+        .into_type()
+        .expect_success("file.into_type");
+    let mut font_file = match font_file {
+        FileType::Dir(_) => {
+            panic!("Expect font.ttf is a regular file, not a diectory!");
+        }
+        FileType::Regular(file) => file,
+    };
+    info!("open font.ttf");
+    let file_size = {
+        let mut len = 128;
+        let mut buffer_ptr = bt
+            .allocate_pool(boot::MemoryType::LOADER_DATA, len)
+            .expect_success("alloc failed");
+        let mut buffer = unsafe { core::slice::from_raw_parts_mut(buffer_ptr, len) };
+        let file_info = loop {
+            match font_file.get_info::<FileInfo>(&mut buffer) {
+                Ok(r) => break r.unwrap(),
+                Err(e) => {
+                    len = e.data().unwrap();
+                    bt.free_pool(buffer_ptr)
+                        .expect_success("Failed to free memory");
+                    buffer_ptr = bt
+                        .allocate_pool(boot::MemoryType::LOADER_DATA, len)
+                        .expect_success("alloc failed");
+                    buffer = unsafe { core::slice::from_raw_parts_mut(buffer_ptr, len) };
+                    continue;
+                }
+            }
+        };
+        let file_size = file_info.file_size();
+        drop(file_info);
+        drop(buffer);
+        bt.free_pool(buffer_ptr)
+            .expect_success("Failed to free memory");
+        file_size as usize
+    };
+    info!("font.ttf size: {} bytes", file_size);
+    let font_ptr = bt
+        .allocate_pool(boot::MemoryType::LOADER_DATA, file_size)
+        .expect_success("alloc failed");
+    let font = unsafe { core::slice::from_raw_parts_mut(font_ptr, file_size) };
+    font_file
+        .read(font)
+        .expect_success("Failed to read font.ttf");
+    info!("read font.ttf to memory");
+    font as &[u8]
+}
+
+pub fn init(fb: Framebuffer<'static, RGBA8888>, font: &[u8]) {
+    let mut console = CONSOLE.lock();
+    let font = TrueTypeFont::new(font, 20.0);
+    let mut newterm = Fbterm::new(fb, font);
+    let double_buffer = alloc::vec![0u8; newterm.framebuffer.buffer_size()];
+    // FIXME: don't use leak
+    let addr = NonNull::new(double_buffer.leak().as_mut_ptr()).unwrap();
+    unsafe { newterm.framebuffer.set_double_buffer(addr) };
+    console.fbterm = Some(newterm);
 }
 
 #[cfg(not(debug_assertions))]

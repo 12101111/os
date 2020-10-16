@@ -13,7 +13,7 @@ static CONSOLE: Mutex<Console> = Mutex::new(Console {
 });
 
 pub struct Console {
-    fbterm: Option<Fbterm<'static, RGBA8888>>,
+    fbterm: Option<Fbterm<'static, RGBA8888, TrueTypeFont>>,
     uart: Option<UART>,
 }
 
@@ -35,8 +35,8 @@ pub macro println($($arg:tt)*) {
     print!("{}\r\n", format_args!($($arg)*))
 }
 
-pub fn init(st: &SystemTable<Boot>) {
+pub fn init(_st: &SystemTable<Boot>) {
     log::init();
     uart::init();
-    uefifb::init(st);
+    //uefifb::init(st);
 }

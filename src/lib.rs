@@ -6,7 +6,6 @@
 #[macro_use]
 extern crate log;
 extern crate alloc;
-extern crate rlibc;
 
 pub mod acpi;
 pub mod console;
@@ -20,6 +19,8 @@ use uefi::{
 
 pub fn init(image: uefi::Handle, st: SystemTable<Boot>) {
     console::init(&st);
+    let fb = console::uefifb::get_fb(&st);
+    let font = console::uefifb::get_font(&st);
     let bt = st.boot_services();
     let mmap_size =
         st.boot_services().memory_map_size() + 8 * core::mem::size_of::<boot::MemoryDescriptor>();
@@ -31,12 +32,25 @@ pub fn init(image: uefi::Handle, st: SystemTable<Boot>) {
         .exit_boot_services(image, &mut buffer[..])
         .expect_success("Failed to exit boot services");
     unsafe { int::init() }
-    mm::init(map);
-    let acpi = acpi::get_acpi(&st);
-    info!("BSP: {:?}",acpi.boot_processor);
-    for ap in acpi.application_processors{
-        info!("AP: {:?}",ap)
+    let map = mm::init(map);
+    console::uefifb::init(fb, font);
+    for mem in map {
+        info!(
+            "Page: 0x{:06X} -- 0x{:06X} Type:{:?}",
+            mem.phys_start >> 12,
+            (mem.phys_start >> 12) + mem.page_count,
+            mem.ty
+        );
     }
+    use ::acpi::PlatformInfo;
+    let acpi = acpi::get_acpi(&st);
+    let plat = PlatformInfo::new(&acpi).unwrap();
+    let proc_info = plat.processor_info.unwrap();
+    info!("BSP: {:?}", proc_info.boot_processor);
+    for ap in proc_info.application_processors {
+        info!("AP: {:?}", ap)
+    }
+    info!("Available memory: {} Bytes", mm::size());
 }
 
 pub fn hlt_loop() -> ! {
